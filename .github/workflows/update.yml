@@ -1,0 +1,44 @@
+name: Update mirror
+
+on:
+  schedule:
+    - cron: "15 8 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: update-mirror
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Update typos mirror
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Update mirror
+        run: python3 scripts/update_mirror.py
+
+      - name: Push changes and tags
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git remote set-url origin \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          git push --atomic origin HEAD:refs/heads/main --tags
