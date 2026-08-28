@@ -10,7 +10,7 @@ on:
 jobs:
   zizmor:
     name: zizmor
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     timeout-minutes: 10
 
     permissions:
